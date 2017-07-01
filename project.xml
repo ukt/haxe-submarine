@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+	<!-- NMML reference: https://gist.github.com/1763850 -->
+
+	<!-- metadata, make sure 'package' is at least 3 segments (ie. com.mycompany.myproject) -->
+	<meta title="Submarine" package="com.loka.haxeTest" version="1.0.1" company="loka" />
+
+	<!-- output -->
+	<app main="Main" file="Submarine" path="bin" />
+
+	<window background="#000000" fps="60" />
+	<window width="800" height="480" unless="mobile" />
+	<window orientation="landscape" vsync="false" antialiasing="0" if="cpp" />
+
+	<!-- classpath, haxe libs -->
+	<source path="src" />
+	<!--<source path="./../output/build-tools/" />-->
+	<haxelib name="openfl" />
+	<haxelib name="actuate" />
+
+	<!-- assets -->
+	<icon path="assets/openfl.svg" />
+	<assets path="assets/img" rename="img" />
+	<assets path="assets/sounds" rename="sounds" />
+	<!--<assets path="assets">
+		<assets path="images" include="*" type="image" />
+		<sound path="sound/mySound.wav" name="MySound" />
+		<music path="sound/BackgroundMusic.mp3" />
+	</assets>-->
+
+	<!-- optimize output
+		 <haxeflag name="-dce full" /> -->
+	<!--<dependency name="es-orientation" path="dependencies/android" if="android" />-->
+    <!--<android extension="org.haxe.extension.esorientation.EsOrientation" />-->
+	<!--<android target-sdk-version="17" />-->
+	<window hardware="true" allow-shaders="true" require-shaders="true" if="cpp"/>
+	<window vsync="true" antialiasing="4" if="cpp" />
+	<window orientation="portrait" /> || <window orientation="landscape" if="cpp"/>
+	<!--<window -->
+
+</project>

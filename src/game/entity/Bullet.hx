@@ -1,4 +1,4 @@
-package world.entity;
+package game.entity;
 import openfl.Assets;
 import openfl.Lib;
 import openfl.display.Bitmap;
@@ -8,6 +8,7 @@ import openfl.geom.Matrix;
 import openfl.geom.Point;
 import openfl.media.Sound;
 import world.World;
+import world.entity.Entity;
 
 class Bullet implements Entity {
 	var uia:Bitmap;

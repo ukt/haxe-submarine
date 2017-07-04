@@ -1,4 +1,4 @@
-package world.entity;
+package game.entity;
 import openfl.Assets;
 import openfl.Lib;
 import openfl.display.Bitmap;
@@ -10,6 +10,7 @@ import openfl.display.Sprite;
 import openfl.geom.Matrix;
 import openfl.geom.Point;
 import world.World;
+import world.entity.Entity;
 
 /**
  * ...

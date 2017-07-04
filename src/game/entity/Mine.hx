@@ -1,4 +1,4 @@
-package world.entity;
+package game.entity;
 import openfl.Assets;
 import openfl.Lib;
 import openfl.display.Bitmap;

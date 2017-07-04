@@ -1,4 +1,4 @@
-package world.entity;
+package game.entity;
 
 import gamepad.GamePadEvent;
 import gamepad.JoystickWrapper;
@@ -20,6 +20,7 @@ import openfl.ui.GameInput;
 import openfl.ui.GameInputControl;
 import openfl.ui.GameInputDevice;
 import world.World;
+import world.entity.Entity;
 
 /**
  * ...

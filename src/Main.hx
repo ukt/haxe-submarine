@@ -9,7 +9,7 @@ import openfl.Assets;
 import openfl.events.MouseEvent;
 import openfl.geom.Point;
 import openfl.media.Sound;
-import world.entity.Mine;
+import game.entity.Mine;
 //import js.html.Gamepad;
 import lime.ui.GamepadButton;
 import metrics.FPSStatistics;
@@ -22,7 +22,7 @@ import openfl.text.TextField;
 import openfl.ui.GameInput;
 import openfl.ui.GameInputDevice;
 import world.World;
-import world.entity.NavigationPerson;
+import game.entity.NavigationPerson;
 
 /**
  * ...

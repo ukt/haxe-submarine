@@ -9,6 +9,7 @@ import openfl.Assets;
 import openfl.events.MouseEvent;
 import openfl.geom.Point;
 import openfl.media.Sound;
+import world.entity.Mine;
 //import js.html.Gamepad;
 import lime.ui.GamepadButton;
 import metrics.FPSStatistics;
@@ -40,6 +41,10 @@ class Main extends Sprite
 		Lib.current.stage.align = StageAlign.TOP_LEFT;
 		App.instance.initialize();
 		App.instance.world.addEntity(new NavigationPerson());
+		App.instance.world.addEntity(new Mine(new Point(100, 100)));
+		App.instance.world.addEntity(new Mine(new Point(100, 200)));
+		App.instance.world.addEntity(new Mine(new Point(200, 200)));
+		App.instance.world.addEntity(new Mine(new Point(200, 100)));
 		App.instance.world.start();
 		fps = new FPSStatistics(10,10,0xffffff);
 		Lib.current.stage.addChild(fps);
@@ -50,23 +55,6 @@ class Main extends Sprite
 		logs.height = stage.stageHeight;
 		Lib.current.stage.addChild(logs);
 		Log.info("Hello World");
-		var map:Map<Int, Int> = new Map();
-		var array:Array<Int> = new Array();
-		for (i in 1...10000000){
-			map.set(i, i + 1);
-			array.push(i + 1);
-		}
-		var size = 0;
-		var curTime:Float = Date.now().getTime();
-		for (i in map){
-			size++;
-		}
-		trace("MapLoop: " + (Date.now().getTime() - curTime));
-		curTime = Date.now().getTime();
-		for (i in array){
-			size++;
-		}
-		trace("ArrLoop: " + (Date.now().getTime() - curTime));
 	}
 		/*new GameInput ().addEventListener (GameInputDevice.DEVICE_ADDED, function (event) {
 

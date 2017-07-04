@@ -13,7 +13,7 @@ class Bullet implements Entity {
 	var uia:Bitmap;
 	var world:World;
 	var position:Point;
-	var currentPoint:Point;
+	//var currentPoint:Point;
 	var vector:Point;
 	var speed:Float;
 	var timeToLive:Float;
@@ -21,18 +21,19 @@ class Bullet implements Entity {
 	var smokeIntervalTmp:Float;
 	var fireInterval:Float;
 	var fireIntervalTmp:Float;
-	var xa:Float;
-	var ya:Float;
+	private static var asset:BitmapData = null;
+	//var xa:Float;
+	//var ya:Float;
 	
-	public function new(startPoint:Point, vector:Point, speed:Float, timeToLive:Float = 5000, smokeInterval:Float = 50) {
+	public function new(startPoint:Point, vector:Point, speed:Float, timeToLive:Float = 5000, smokeInterval:Float = 500) {
 		smokeIntervalTmp = this.smokeInterval = smokeInterval;
 		fireIntervalTmp = this.fireInterval = smokeInterval * .25;
 		this.speed = speed;
 		this.vector = vector;
-		currentPoint = this.position = startPoint;
+		this.position = startPoint;
 		this.timeToLive = timeToLive;
-		xa = (vector.x - startPoint.x) / (speed / 1000);
-		ya = (vector.y - startPoint.y) / (speed / 1000);
+		//xa = (vector.x - startPoint.x) / (speed / 1000);
+		//ya = (vector.y - startPoint.y) / (speed / 1000);
 		//trace("Bullet::xa: " + xa);
 		//trace("Bullet::ya: " + ya);
 	}
@@ -58,55 +59,48 @@ class Bullet implements Entity {
 		if (smokeIntervalTmp < 0){
 			smokeIntervalTmp = smokeInterval;
 			var position = GameMath.rotatePointAroundPoint(new Point(position.x, position.y+uia.height*.5), new Point(position.x, position.y), uia.rotation);
-			world.addEntity(new SmokeVfx(position, 0xcecece, 300));
+			world.addEntity(new SmokeVfx(position, 1000, uia.rotation));
 		}
-		if (fireIntervalTmp < 0){
+		/*if (fireIntervalTmp < 0){
 			fireIntervalTmp = fireInterval;
 			var position = GameMath.rotatePointAroundPoint(new Point(position.x, position.y+uia.height*.5), new Point(position.x, position.y), uia.rotation);
 			world.addEntity(new SmokeVfx(position, 0xffe100, 100));
 			world.addEntity(new SmokeVfx(position, 0xff0000, 50));
-		}
+		}*/
 	}
 	
 	public function initialize(world:World):Void {
 		this.world = world;
-		trace(Bullet);
+		//trace(Bullet);
 		trace("Bullet uploaded: ");
 		trace("position: " + position);
 		trace("vector: " + vector);
-		var bitmapData = openfl.Assets.getBitmapData("img/torpedo2.png");
-		var scale:Float = .30;
-		var matrix:Matrix = new Matrix();
-		matrix.scale(scale, scale);
-		var smallBMD:BitmapData = new BitmapData(Math.round(bitmapData.width * scale), Math.round(bitmapData.height * scale), true, 0xffffff);
-		smallBMD.draw(bitmapData, matrix, null, null, null, true);
-		bitmapData.dispose();
-		uia = new Bitmap(smallBMD);
+		if (asset == null){
+			asset = openfl.Assets.getBitmapData("img/torpedo2.png");
+			var bitmapData = asset;
+			var scale:Float = .30;
+			var matrix:Matrix = new Matrix();
+			matrix.scale(scale, scale);
+			var smallBMD:BitmapData = new BitmapData(Math.round(bitmapData.width * scale), Math.round(bitmapData.height * scale), true, 0xffffff);
+			smallBMD.draw(bitmapData, matrix, null, null, null, true);
+			bitmapData.dispose();
+			asset = smallBMD;
+		}
+		
+		uia = new Bitmap(asset);
 		uia.cacheAsBitmap = true;
-		//var v:Point = vector.subtract(startPoint);
-		//v.normalize(1);
-		//var zeroV:Point = new Point(1, 0);
-		//zeroV.normalize(1);
 		var angle:Float = GameMath.angleOfVector(vector);
 		trace("angle::" + angle);
 		uia.rotation = angle;
-		//uia.scaleX = uia.scaleY = .15;
-		
-		//var bitmap:Bitmap = new Bitmap(smallBMD, PixelSnapping.NEVER, true);
-		
-		//var bitmap:Bitmap = new Bitmap();
-		//bitmap.cacheAsBitmap = true;
-		//uia.bitmapData = bitmapData;
 		Lib.current.stage.addChild(uia);
 		var sound:Sound = Assets.getSound("sounds/submarine-echo.wav");
 		sound.play (0, -1);
-		
 	}
 	
 	public function dispose():Void {
 		Lib.current.stage.removeChild(uia);
 		
-		uia.bitmapData.dispose();
+		//uia.bitmapData.dispose();
 		uia.bitmapData = null;
 		
 		world = null;

@@ -14,6 +14,7 @@ import openfl.display.BitmapData;
 import openfl.display.DisplayObject;
 import openfl.display.DisplayObjectContainer;
 import openfl.events.GameInputEvent;
+import openfl.events.TouchEvent;
 import openfl.geom.Point;
 import openfl.ui.GameInput;
 import openfl.ui.GameInputControl;
@@ -30,56 +31,69 @@ class NavigationPerson implements Entity
 	public var deployTorpeds(get, set):Bool;
 	function set_deployTorpeds(val:Bool):Bool{
 		_deployTorpeds = val;
-		if (deployTorpeds){
-			//_currentBulletTimeOffset = _bulletTimeOffset;
-		}
 		return val;
 	};
 	function get_deployTorpeds():Bool{
 		return _deployTorpeds;
 	};
-	//var uia:BitmapData;
 	var uia:Bitmap;
-	private var _x:Float = 200;
-	private var _y:Float = 100;
 	private var _floatP:Float = 0.0079;
-	private var _bulletTimeOffset:Float = 500;
+	private var _bulletTimeOffset:Float = 100;
 	private var _currentBulletTimeOffset:Float = 0;
 	var device:GameInputDevice;
 	var myDevice:GameInputDevice;
 	var gameInput:GameInput;
 	var originalSpeed = 100;
 	var speed = 100;
-	var vectorOfMoving:Point = new Point(0.001,0.001);
 	var axis:Point = new Point(0.001,0.001);
 	var world:World;
 	var isXChanges:Bool = false;
+	var position:Point = new Point(200, 100);
+	var vectorOfMoving:Point = new Point(0.001,0.001);
+
 	//var actions:Array<Function> = new Array();
 	public function new() 
 	{
-		uia = new Bitmap();
-		var bitmapData = openfl.Assets.getBitmapData("img/submarine.png");
-		var bitmap:Bitmap = new Bitmap();
-		uia.bitmapData = bitmapData;
-		uia.cacheAsBitmap = true;
-		Lib.current.stage.addChild(uia);
-		//new GameInputDevice();
 		
 		gameInput = new GameInput();
 		gameInput.addEventListener(GameInputEvent.DEVICE_ADDED, controllerAdded);
-		//trace(GameInput.numDevices);//tells you how many gamepads are plugged in
-		//myDevice = GameInput.getDeviceAt(0);
-		//trace(myDevice.numControls);//tells you how many gamepads are plugged in
-		//myDevice.enabled = true;
-		//gameInput.
 		gameInput.addEventListener(GameInputEvent.DEVICE_REMOVED, controllerRemoved);
 		gameInput.addEventListener(GameInputEvent.DEVICE_UNUSABLE, controllerProblem);
+		var touch:Point = new Point(0, 0);
 		var context:NavigationPerson = this;
-		var joystick = new JoystickWrapper();
-		joystick.addListener(GamePadEvent.H_THUMB_STICK_1, function(value:Float, status:Bool) {
+
+		Lib.current.stage.addEventListener(TouchEvent.TOUCH_MOVE, function(e:TouchEvent):Void{
+			context.deployTorpeds = true;
+			var scrollX = e.localX < touch.x ? touch.x : (Lib.current.stage.stageWidth - touch.x);
+			var scrollY = e.localY < touch.y ? touch.y : (Lib.current.stage.stageHeight - touch.y);
+			var scrollXPos = e.localX < touch.x ? e.localX / scrollX : (e.localX - touch.x) / scrollX;
+			var scrollYPos = e.localY < touch.y ? e.localY / scrollY : (e.localY - touch.y) / scrollY;
+			var valueX = scrollXPos*(e.localX < touch.x ?-1:1);
+			var valueY = scrollYPos*(e.localY < touch.y ?-1:1);
+	
+			isXChanges = (context.axis.x > 0 && valueX < 0) || (context.axis.x < 0 && valueX > 0);
+
+			context.axis.x = valueX;
+			context.axis.y = valueY;
+			Main.fps.values.set("e.localX", e.localX);
+			Main.fps.values.set("e.localY", e.localY);
+			Main.fps.values.set("context.axis.x", context.axis.x);
+			Main.fps.values.set("context.axis.y", context.axis.y);
+			context.vectorOfMoving = context.axis.clone();
+			context.vectorOfMoving.normalize(1);
 			
 		});
-		//trace("Joystick.devices: " + Lambda.count(Joystick.devices));
+		Lib.current.stage.addEventListener(TouchEvent.TOUCH_BEGIN, function(e:TouchEvent):Void{
+			context.deployTorpeds = true;
+			touch.x = e.localX;
+			touch.y = e.localY;
+			Main.fps.values.set("touch.x", touch.x);
+			Main.fps.values.set("touch.y", touch.y);
+		});
+		Lib.current.stage.addEventListener(TouchEvent.TOUCH_END, function(e:TouchEvent):Void{
+			context.deployTorpeds = false;
+		});
+		
 		Joystick.onConnect.add (function (joystick) {
 
 		  Main.fps.values.set("Joystick", "Connected Joystick: " + joystick.name);
@@ -88,16 +102,16 @@ class NavigationPerson implements Entity
 			Main.fps.values.set("Joystick", "Moved Axis " + axis + ": " + value);
 			Main.fps.values.set("Joystick", axis + "::" + value);
 			if (Math.abs(value) < 0.0079){
-				value = 0.0000000000001*(context.axis.x>0?1:-1);
+				value = 0.0000000000001 * (context.axis.x > 0 ? 1 : -1);
 			}
 			switch(axis){
 				case 0/*, "LEFT_X"*/:
+					isXChanges = (context.axis.x > 0 && value < 0) || (context.axis.x < 0 && value > 0);
 					context.axis.x = value;
-					context.vectorOfMoving = context.axis.clone();
 				case 1/*"LEFT_Y"*/:
 					context.axis.y = value;
-					context.vectorOfMoving = context.axis.clone();
 				}
+				context.vectorOfMoving = context.axis.clone();
 				context.vectorOfMoving.normalize(1);
 		  });
 
@@ -134,93 +148,6 @@ class NavigationPerson implements Entity
 		  });
 
 		});
-		/*Gamepad.onConnect.add (function (gamepad) {
-
-			trace ("Connected Gamepad: " + gamepad.name);
-			Main.logs.text = ("Connected Gamepad: " + gamepad.name);
-			
-			gamepad.onAxisMove.add (function (axis:GamepadAxis, value:Float) {
-				trace ("Moved Axis " + axis + ": " + value);
-				Main.logs.text = (axis + "::" + value);
-				var newOfsset = value * context.ofsset;
-				switch(axis.toString()){
-					case "LEFT_X":
-						trace("move left: " + (newOfsset));
-						context._xOfssset += newOfsset;
-						if(Math.abs(context._xOfssset+newOfsset)<ofsset){
-							context._xOfssset += newOfsset;
-						} else if(newOfsset>0){
-							context._xOfssset = ofsset;
-						} else {
-							context._xOfssset = -ofsset;
-						}
-						if (newOfsset > 0){
-							context.isXChanges = context._xOfssset > 0 && context._xOfssset - newOfsset < 0;	
-						} else {
-							context.isXChanges = context._xOfssset < 0 && context._xOfssset - newOfsset > 0;
-						}
-						if (Math.abs(value) < 0.1){
-							context._xfloatP= .95;
-						} else {
-							context._xfloatP = 1;
-						}
-					case "LEFT_Y":
-						if(Math.abs(context._yOfssset+newOfsset)<ofsset){
-							context._yOfssset += newOfsset;
-						} else if(newOfsset>0){
-							context._yOfssset = ofsset;
-						} else {
-							context._yOfssset = -ofsset;
-						}
-						if (Math.abs(value) < 0.1){
-							context._yfloatP = .95;
-						} else {
-							context._yfloatP = 1;
-						}
-				}
-			});
-
-			gamepad.onButtonDown.add (function (button:GamepadButton) {
-				trace ("Pressed Button: " + button);
-				Main.logs.text = ("Pressed Button: " + button);
-				switch(button.toString()){
-					case "DPAD_UP":
-						context._yOfssset -= ofsset;
-					case "DPAD_DOWN":
-						context._yOfssset += ofsset;
-					case "DPAD_LEFT":
-						context._xOfssset -= context.ofsset;
-						isXChanges = _xOfssset < 0 && _xOfssset + context.ofsset> 0;
-					case "DPAD_RIGHT":
-						context._xOfssset += context.ofsset;
-						context.isXChanges = context._xOfssset > 0 && context._xOfssset - context.ofsset < 0;
-					case "B":
-						context.ofsset = 4;
-					case "A":
-						if (context._currentBulletTimeOffset < 0){
-							context._currentBulletTimeOffset = context._bulletTimeOffset;
-							trace("g:uia.height:: " + uia.height);
-							var startPos = new Point(_x, _y + uia.height);
-							var endPosition = new Point(_x, _y);
-							context.world.addEntity(new Bullet(startPos, endPosition, 120 + Math.random()*10));
-						}
-				}
-			});
-
-			gamepad.onButtonUp.add (function (button:GamepadButton) {
-				trace ("Released Button: " + button);
-				Main.logs.text = ("Released Button: " + button);
-				switch(button.toString()){
-					case "B":
-						context.ofsset = 2;
-				}
-			});
-
-			gamepad.onDisconnect.add (function () {
-				trace ("Disconnected Gamepad");
-			});
-
-		});*/
 	}
 	
 	private function controllerRemoved(e:GameInputEvent):Void {
@@ -238,97 +165,27 @@ class NavigationPerson implements Entity
 		myDevice.enabled = true;
 	}
 	
-	
 	/* INTERFACE world.entity.Entity */
-	
 	public function draw():Void 
 	{
-		/*while (actions.length > 0){
-			actions.pop()();
-		}*/
-		/*var isXChanges:Bool = false;
-
-		if (myDevice != null) {
-			ofsset = 2;
-			var activeControls:Array<GameInputControl> = getActiveControls();
-			for (control in activeControls){
-				switch(control.id){
-						case GamePadKeys.B:
-							ofsset = 4;
-						case GamePadKeys.A:
-							if (_currentBulletTimeOffset < 0){
-								_currentBulletTimeOffset = _bulletTimeOffset;
-								world.addEntity(new Bullet(new Point(_x, _y), new Point(_x, _y), 120 + Math.random()*10));
-							}
-				}
-			}
-			for (control in activeControls){
-				var newOfsset = control.value * ofsset;
-
-				trace(control.id + "::" + control.value);
-				//Main.logs.appendText(control.id + "::" + control.value);
-				Main.logs.text = (control.id + "::" + control.value);
-				
-				switch(control.id){
-					case GamePadKeys.TOP:
-						_yOfssset -= ofsset;
-					case GamePadKeys.BOTTOM:
-						_yOfssset += ofsset;
-					case GamePadKeys.LEFT:
-						_xOfssset -= newOfsset;
-						isXChanges = _xOfssset < 0 && _xOfssset + newOfsset > 0;
-					case GamePadKeys.RIGHT:
-						_xOfssset += newOfsset;
-						isXChanges = _xOfssset > 0 && _xOfssset - newOfsset < 0;
-					case GamePadKeys.V_THUMB_STICK_1:
-						#if flash
-						_yOfssset -= newOfsset;
-						#else
-						_yOfssset += newOfsset;
-						#end
-					case GamePadKeys.H_THUMB_STICK_1:
-						trace("move left: " + (newOfsset));
-						_xOfssset += newOfsset;
-						if (newOfsset > 0){
-							isXChanges = _xOfssset > 0 && _xOfssset - newOfsset < 0;	
-						} else {
-							isXChanges = _xOfssset < 0 && _xOfssset - newOfsset > 0;
-						}
-				}
-			}
-		}*/
-		/*if (isXChanges){
-			isXChanges = false;
-			if (_xOfssset < 0){
+		uia.x = position.x + (axis.x < 0?0:uia.width);
+		uia.y = position.y;
+		if(isXChanges){
+			if (axis.x < 0){
 				uia.scaleX = 1;
-				_x -= uia.width;
 			} else {
 				uia.scaleX = -1;
-				_x += uia.width;
+				//uia.x = uia.x + uia.width;
 			}
-		}
-		//_y += _yOfssset*=.8;
-		_y += _yOfssset *=_yfloatP;
-		//_x += _xOfssset *= .8;
-		_x += _xOfssset *=_xfloatP;*/
-		uia.x = _x;
-		uia.y = _y;
-		if (vectorOfMoving.x < 0){
-			uia.x = _x - uia.width;
-			uia.scaleX = 1;
-		} else {
-			uia.scaleX = -1;
+			isXChanges = false;
 		}
 	}
 	
 	
 	public function update(dt:Float):Void {
 		var distance = (speed * (dt / 1000)) * axis.length;
-		var currentPosition = new Point(_x, _y);
-		var point = GameMath.movePointByVector(currentPosition, vectorOfMoving, distance);
+		position = GameMath.movePointByVector(position, vectorOfMoving, distance);
 		controlBulletsDeploy(dt);
-		_x = point.x;
-		_y = point.y;
 	}
 	
 	public function initialize(world:World):Void {
@@ -336,6 +193,12 @@ class NavigationPerson implements Entity
 		gameInput = new GameInput();
 		gameInput.addEventListener(GameInputEvent.DEVICE_ADDED, controllerAdded);
 		vectorOfMoving.normalize(1);
+		
+		uia = new Bitmap();
+		var bitmapData = openfl.Assets.getBitmapData("img/submarine.png");
+		uia.bitmapData = bitmapData;
+		uia.cacheAsBitmap = true;
+		Lib.current.stage.addChild(uia);
 	}
 	
 	public function dispose():Void {
@@ -348,7 +211,7 @@ class NavigationPerson implements Entity
 
 		for (i in 0 ... myDevice.numControls){
 				var control:GameInputControl = myDevice.getControlAt(i);
-				if (control.value >= floatP || control.value <= -floatP){
+				if (control.value >= floatP || control.value <= -floatP) 	{
 					result.push(control);
 				}
 		}
@@ -359,8 +222,8 @@ class NavigationPerson implements Entity
 		_currentBulletTimeOffset -= dt;
 		if (_currentBulletTimeOffset < 0 && deployTorpeds){
 			var startPos = new Point(
-				_x + (vectorOfMoving.x>0?-50:-uia.width), 
-				_y + uia.height * .75
+				position.x + (axis.x<0?0+25:uia.width-25), 
+				position.y + uia.height * .75
 			);
 			var bulletVector = vectorOfMoving.clone();
 			if (axis.length < .1){

@@ -1,6 +1,7 @@
 package;
 
 import app.App;
+import game.entity.HitAreaDrawer;
 import lime.app.Application;
 import lime.ui.Gamepad;
 import lime.ui.GamepadAxis;
@@ -10,6 +11,9 @@ import openfl.events.MouseEvent;
 import openfl.geom.Point;
 import openfl.media.Sound;
 import game.entity.Mine;
+import tests.EntityMasksTest;
+import tests.WorldTest;
+import world.ColliderImpl;
 //import js.html.Gamepad;
 import lime.ui.GamepadButton;
 import metrics.FPSStatistics;
@@ -35,16 +39,24 @@ class Main extends Sprite
 	public function new() 
 	{
 		super();
+		runTests();
 		trace("Hello World");
 		//Application.current.
 		Lib.current.stage.scaleMode = StageScaleMode.NO_SCALE;
 		Lib.current.stage.align = StageAlign.TOP_LEFT;
 		App.instance.initialize();
+		App.instance.world.useCollider(new ColliderImpl());
 		App.instance.world.addEntity(new NavigationPerson());
-		App.instance.world.addEntity(new Mine(new Point(100, 100)));
-		App.instance.world.addEntity(new Mine(new Point(100, 200)));
-		App.instance.world.addEntity(new Mine(new Point(200, 200)));
-		App.instance.world.addEntity(new Mine(new Point(200, 100)));
+		//App.instance.world.addEntity(new Mine(new Point(100, 100)));
+		//App.instance.world.addEntity(new Mine(new Point(100, 200)));
+		//App.instance.world.addEntity(new Mine(new Point(200, 200)));
+		//App.instance.world.addEntity(new Mine(new Point(200, 100)));
+		for (i in 1...5){
+			for (j in 1...5){
+				App.instance.world.addEntity(new Mine(new Point(i * 100, j * 100), 100 * (5-i)));
+			}
+		}
+		App.instance.world.addEntity(new HitAreaDrawer());
 		App.instance.world.start();
 		fps = new FPSStatistics(10,10,0xffffff);
 		Lib.current.stage.addChild(fps);
@@ -55,6 +67,17 @@ class Main extends Sprite
 		logs.height = stage.stageHeight;
 		Lib.current.stage.addChild(logs);
 		Log.info("Hello World");
+	}
+	
+	function runTests() 
+	{
+		var r = new haxe.unit.TestRunner();
+		r.add(new WorldTest());
+		r.add(new EntityMasksTest());
+		// add other TestCases here
+
+		// finally, run the tests
+		r.run();
 	}
 		/*new GameInput ().addEventListener (GameInputDevice.DEVICE_ADDED, function (event) {
 

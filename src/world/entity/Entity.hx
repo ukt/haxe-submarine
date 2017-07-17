@@ -1,8 +1,9 @@
 package world.entity;
 
-interface Entity {
-	public function draw():Void;
-	public function update(dt:Float):Void;
+import world.Drawable;
+import world.Updatable;
+
+interface Entity extends Updatable extends Drawable {
 	public function initialize(world:World):Void;
 	public function dispose():Void;
 }

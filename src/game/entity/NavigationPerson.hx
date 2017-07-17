@@ -133,6 +133,15 @@ class NavigationPerson implements Entity
 					context.speed = context.originalSpeed;
 				case 0/*"A"*/:
 					context.deployTorpeds = false;
+				case 2/*"A"*/:
+					var hasHitAreaDrawer:Bool = false;
+					context.world.forEach(HitAreaDrawer, function(e:HitAreaDrawer){
+						hasHitAreaDrawer = true;
+						context.world.removeEntity(e);
+					});
+					if(!hasHitAreaDrawer){
+						context.world.addEntity(new HitAreaDrawer());
+					}
 			}
 		  });
 
@@ -230,7 +239,7 @@ class NavigationPerson implements Entity
 			if (axis.length < .1){
 				bulletVector = new Point(axis.x>0?1:-1, 0);
 			}
-			world.addEntity(new Bullet(startPos, bulletVector, 100));
+			world.addEntity(new Bullet(startPos, bulletVector, 100).withImpactForce(10));
 			_currentBulletTimeOffset = _bulletTimeOffset;
 		}
 	}

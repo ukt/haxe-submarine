@@ -53,6 +53,7 @@ class FPSStatistics  extends TextField
 				}
 				if(selectActive && startActive) {
 					active = !active;
+					visible = active;
 				}
 			});
 		});

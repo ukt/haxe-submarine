@@ -1,4 +1,5 @@
 package game.entity;
+import game.masks.EntityMasks;
 import openfl.Assets;
 import openfl.Lib;
 import openfl.display.Bitmap;
@@ -7,10 +8,13 @@ import openfl.display.PixelSnapping;
 import openfl.geom.Matrix;
 import openfl.geom.Point;
 import openfl.media.Sound;
+import world.Attackable;
 import world.World;
+import world.collider.CircleHitArea;
+import world.collider.HitArea;
 import world.entity.Entity;
 
-class Bullet implements Entity {
+class Bullet implements Entity implements Attackable {
 	var uia:Bitmap;
 	var world:World;
 	var position:Point;
@@ -23,16 +27,18 @@ class Bullet implements Entity {
 	var fireInterval:Float;
 	var fireIntervalTmp:Float;
 	private static var asset:BitmapData = null;
+	var _impactForce:Float = 10;
 	//var xa:Float;
 	//var ya:Float;
 	
-	public function new(startPoint:Point, vector:Point, speed:Float, timeToLive:Float = 5000, smokeInterval:Float = 500) {
+	public function new(startPoint:Point, vector:Point, speed:Float, timeToLive:Float = 5000, smokeInterval:Float = 500, impactForce:Float = 10) {
 		smokeIntervalTmp = this.smokeInterval = smokeInterval;
 		fireIntervalTmp = this.fireInterval = smokeInterval * .25;
 		this.speed = speed;
 		this.vector = vector;
 		this.position = startPoint;
 		this.timeToLive = timeToLive;
+		this._impactForce = impactForce;
 		//xa = (vector.x - startPoint.x) / (speed / 1000);
 		//ya = (vector.y - startPoint.y) / (speed / 1000);
 		//trace("Bullet::xa: " + xa);
@@ -109,6 +115,36 @@ class Bullet implements Entity {
 		
 		//bitmapData.disposeImage();
 		trace("Bullet die");
+	}
+	
+	
+	/* INTERFACE world.Attackable */
+	
+	public function hit(damage:Float):Void 
+	{
+		world.removeEntity(this);
+	}
+	
+	public function hitArea():HitArea 
+	{
+		var hitAreaPosition = position.clone();
+		hitAreaPosition.offset(10, 10);
+		return new CircleHitArea(hitAreaPosition, 10, 
+			EntityMasks.getMasks([EntityMasks.ATTACKABLE,EntityMasks.HITTABLE]),
+			EntityMasks.getMask(EntityMasks.HITTABLE)		
+		);
+	}
+	
+	
+	/* INTERFACE world.Attackable */
+	
+	public function impactForce():Float {
+		return _impactForce;
+	}
+	
+	public function withImpactForce(value:Float):Bullet {
+		_impactForce = value;
+		return this;
 	}
 	
 }

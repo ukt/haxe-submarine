@@ -58,7 +58,6 @@ class FPSStatistics  extends TextField
 			});
 		});
 	}
-	
 	private function onEnter(_)
 	{	
 		var now = Timer.stamp();

@@ -117,26 +117,22 @@ class Bullet implements Entity implements Attackable {
 		trace("Bullet die");
 	}
 	
-	
-	/* INTERFACE world.Attackable */
-	
-	public function hit(damage:Float):Void 
-	{
+	public function hit(damage:Float):Void {
 		world.removeEntity(this);
 	}
 	
-	public function hitArea():HitArea 
-	{
+	public function hitArea():HitArea {
+		var position = GameMath.rotatePointAroundPoint(
+			new Point(this.position.x + uia.width, this.position.y + uia.height * .5), 
+			new Point(this.position.x, this.position.y), 
+			uia.rotation
+		);
 		var hitAreaPosition = position.clone();
-		hitAreaPosition.offset(10, 10);
 		return new CircleHitArea(hitAreaPosition, 10, 
-			EntityMasks.getMasks([EntityMasks.ATTACKABLE,EntityMasks.HITTABLE]),
+			EntityMasks.getMasks([EntityMasks.ATTACKABLE/*,EntityMasks.HITTABLE*/]),
 			EntityMasks.getMask(EntityMasks.HITTABLE)		
 		);
 	}
-	
-	
-	/* INTERFACE world.Attackable */
 	
 	public function impactForce():Float {
 		return _impactForce;
